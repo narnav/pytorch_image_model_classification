@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload and Display Image</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        async function uploadImage(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select a file!");
+                return;
+            }
+
+            formData.append("file", file);
+
+            try {
+                const response = await axios.post("http://127.0.0.1:8000/upload/", formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                });
+
+                const result = response.data;
+                document.getElementById("output").innerHTML = `
+                    <p><strong>Confidence:</strong> ${result.Confidence}</p>
+                    <p><strong>Class:</strong> ${result.Class}</p>
+                    <p><strong>Message:</strong> ${result.message}</p>
+                    <p><strong>File Path:</strong> ${result.file_path}</p>
+                    <img src="${result.file_path}" alt="Uploaded Image" style="max-width: 300px;">
+                `;
+            } catch (error) {
+                if (error.response) {
+                    // Server responded with a status other than 200 range
+                    document.getElementById("output").textContent = `Error: ${error.response.data.detail}`;
+                } else {
+                    // Something else happened while setting up the request
+                    document.getElementById("output").textContent = `Error: ${error.message}`;
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Upload and Display an Image</h1>
+    <form onsubmit="uploadImage(event)">
+        <input type="file" id="fileInput" name="file">
+        <button type="submit">Upload</button>
+    </form>
+    <div id="output" style="margin-top: 20px;"></div>
+</body>
+</html>

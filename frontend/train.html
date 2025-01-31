@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Model</title>
+</head>
+<body>
+    <h1>Train the Model</h1>
+
+    <form id="train-form" action="http://127.0.0.1:8000/train/" method="POST" enctype="multipart/form-data">
+        <label for="file">Choose an image:</label>
+        <input type="file" id="file" name="file" accept="image/*" required><br><br>
+        
+        <label for="label">Enter the label for the image:</label>
+        <input type="text" id="label" name="label" required><br><br>
+
+        <button type="submit">Train Model</button>
+    </form>
+
+    <div id="response"></div>
+
+    <script>
+        document.getElementById("train-form").addEventListener("submit", async function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch("http://127.0.0.1:8000/train/", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById("response").innerHTML = `
+                        <p><strong>Success:</strong> ${data.message}</p>
+                        <p>Label: ${data.label}</p>
+                        <p>File uploaded to: <a href="${data.file_path}" target="_blank">${data.file_path}</a></p>
+                    `;
+                } else {
+                    document.getElementById("response").innerHTML = `
+                        <p><strong>Error:</strong> ${data.detail || 'Something went wrong'}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById("response").innerHTML = `
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
